@@ -1,5 +1,5 @@
 <p align="center"><img src="assets/logos/chipmunk2d.jpeg">
- <h1 align="center">pharo-chipmunk</h1>
+ <h1 align="center">pharo-chipmunk [UNDER DEVELOPMENT]</h1>
   <p align="center">
     pharo-chipmunk are bindings of Chipmunk2D Physics engine for Pharo Smalltalk
     <br>
