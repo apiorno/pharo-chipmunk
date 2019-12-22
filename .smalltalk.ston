@@ -1,0 +1,19 @@
+SmalltalkCISpec {
+  #loading : [
+    SCIMetacelloLoadSpec {
+      #baseline : 'pharo-chipmunk',
+      #directory : 'source',
+      #load : [ 'CI' ],
+      #platforms : [  #pharo ]
+    }
+  ],
+  #testing : {
+    #coverage : {
+       #packages : ['Chipmunk2D-Model']
+    },
+    #include : {  
+       #packages : [ 'Chipmunk2D-UnitTests' ]
+    }
+    
+  }
+} 
