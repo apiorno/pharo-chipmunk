@@ -11,17 +11,25 @@ CmBody class >> finalizeResourceData: handle [
 ]
 
 { #category : #'Instance Creation' }
-CmBody class >> newInfinite [
+CmBody class >> infinite [
 
 	"Used for static bodies"
 
-	^ self newMass: Float infinity moment: Float infinity
+	^ self ofMass: Float infinity andMoment: Float infinity
 ]
 
 { #category : #'Instance Creation' }
-CmBody class >> newMass: mass moment: moment [
+CmBody class >> kinematic [
 
-	^ ( self primCpBodyNewMass: mass asFloat moment: moment asFloat ) initialize
+	"body of kinematic type with 0 mass and 0 moment"
+
+	^ self primCpBodyNewKinematic
+]
+
+{ #category : #'Instance Creation' }
+CmBody class >> ofMass: aMass andMoment: aMoment [
+
+	^ ( self primCpBodyNewMass: aMass asFloat moment: aMoment asFloat ) initialize
 ]
 
 { #category : #private }
@@ -31,30 +39,56 @@ CmBody class >> primCpBodyFree: handle [
 ]
 
 { #category : #private }
+CmBody class >> primCpBodyNewKinematic [
+
+	^ self ffiCall: #(cpBody * cpBodyNewKinematic #())
+]
+
+{ #category : #private }
 CmBody class >> primCpBodyNewMass: m moment: i [
 
 	^ self ffiCall: #(cpBody * cpBodyNew #(cpFloat m , cpFloat i))
 ]
 
-{ #category : #accessing }
+{ #category : #private }
+CmBody class >> primCpBodyNewStatic [
+
+	^ self ffiCall: #(cpBody * cpBodyNewStatic #())
+]
+
+{ #category : #'Instance Creation' }
+CmBody class >> static [
+
+	"body of static type with 0 mass and 0 moment"
+
+	^ self primCpBodyNewStatic
+]
+
+{ #category : #'Managing shapes' }
+CmBody >> addShape: aShape [
+
+	self primAddShape: aShape
+]
+
+{ #category : #Accessing }
 CmBody >> angle [
 
 	^ self primAngle
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> angle: aNumber [
 
 	^ self primAngle: aNumber asFloat
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> angularVelocity [
 
 	^ self primAngularVelocity
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> angularVelocity: aNumber [
 
 	self primAngularVelocity: aNumber asFloat
@@ -72,25 +106,25 @@ CmBody >> applyWorldImpulse: impulsePoint atOffset: offsetPoint [
 	self primApplyWorldImpulse: impulsePoint asCmVector atOffset: offsetPoint asCmVector
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> centerOfGravity [
 
 	^ self primCenterOfGravity asPoint
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> centerOfGravity: aVector [
 
-	self primCenterOfGravity: aVector
+	self primCenterOfGravity: aVector asCmVector 
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> force [
 
 	^ self primForce asPoint
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> force: aPoint [
 
 	self primForce: aPoint asCmVector
@@ -102,40 +136,46 @@ CmBody >> isSleeping [
 	^ self indirectCall: #(cpBool cpBodyIsSleeping #(self))
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> mass [
 
 	^ self primMass
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> mass: aNumber [
 
 	^ self primMass: aNumber asFloat
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> moment [
 
 	^ self primMoment
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> moment: aNumber [
 
 	^ self primMoment: aNumber asFloat
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> position [
 
 	^ self primPosition asPoint
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> position: aPoint [
 
 	self primPosition: aPoint asCmVector
+]
+
+{ #category : #private }
+CmBody >> primAddShape: aShape [
+
+	self ffiCall: #(void cpBodyAddShape #(self, cpShape * aShape))
 ]
 
 { #category : #private }
@@ -215,7 +255,7 @@ CmBody >> primMass: aFloat [
 { #category : #private }
 CmBody >> primMoment [
 
-	^ self ffiCall: #(void cpBodyGetMoment #(self))
+	^ self ffiCall: #(cpFloat cpBodyGetMoment #(self))
 ]
 
 { #category : #private }
@@ -237,15 +277,15 @@ CmBody >> primPosition: vector [
 ]
 
 { #category : #private }
-CmBody >> primRotation [
+CmBody >> primRemoveShape: aShape [
 
-	^ self ffiCall: #(cpVect cpBodyGetRotation #(self))
+	self ffiCall: #(void cpBodyRemoveShape #(self, cpShape * aShape))
 ]
 
 { #category : #private }
-CmBody >> primRotation: aVector [
+CmBody >> primRotation [
 
-	^ self ffiCall: #(void cpBodySetRotation #(self , cpVect aVector))
+	^ self ffiCall: #(cpVect cpBodyGetRotation #(self))
 ]
 
 { #category : #private }
@@ -273,6 +313,12 @@ CmBody >> primType [
 ]
 
 { #category : #private }
+CmBody >> primType: aType [
+
+	self ffiCall: #(void cpBodySetType #(self, cpBodyType aType))
+]
+
+{ #category : #private }
 CmBody >> primVelocity [
 
 	^ self ffiCall: #(cpVect cpBodyGetVelocity #(self))
@@ -284,43 +330,55 @@ CmBody >> primVelocity: vector [
 	^ self ffiCall: #(void cpBodySetVelocity #(self , cpVect vector))
 ]
 
-{ #category : #accessing }
+{ #category : #'Managing shapes' }
+CmBody >> removeShape: aShape [
+
+	self primRemoveShape: aShape
+]
+
+{ #category : #Accessing }
 CmBody >> rotation [
 
 	^ self primRotation
 ]
 
-{ #category : #accessing }
-CmBody >> rotation: aPoint [
+{ #category : #Accessing }
+CmBody >> space [
 
-	self primRotation: aPoint asCmVector
+	^ self primSpace 
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> torque [
 
 	^ self primTorque
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> torque: aFloat [
 
 	^ self primTorque: aFloat
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> type [
 
 	^ self primType
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
+CmBody >> type: aType [
+
+	^ self primType: aType
+]
+
+{ #category : #Accessing }
 CmBody >> velocity [
 
 	^ self primVelocity asPoint
 ]
 
-{ #category : #accessing }
+{ #category : #Accessing }
 CmBody >> velocity: aPoint [
 
 	self primVelocity: aPoint asCmVector

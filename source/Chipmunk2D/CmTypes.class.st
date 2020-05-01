@@ -7,6 +7,7 @@ Class {
 		'cpBB',
 		'cpBody',
 		'cpBodyPositionFunc',
+		'cpBodyType',
 		'cpBodyVelocityFunc',
 		'cpBool',
 		'cpCollisionBeginFunc',
@@ -43,6 +44,7 @@ CmTypes class >> initialize [
 	cpLayers := #uint.
 	cpGroup := #uint.
 	cpCollisionType := #uint.
+	cpBodyType := #uint.
 		
 	"Translating to pointer"
 	cpDataPointer := #ulong.

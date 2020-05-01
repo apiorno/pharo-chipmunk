@@ -11,23 +11,25 @@ CmShape class >> finalizeResourceData: handle [
 ]
 
 { #category : #'Instance Creation' }
-CmShape class >> newBoxBody: aBody boundingBox: aRectangle [
+CmShape class >> newBoxBody: aBody boundingBox: aRectangle radius: aRadius [
 
 	"Creates a box shape with bounding box"
 
 	self flag: 'should this call #initialize?'.
-	self flag: 'falta el radius'.
-	^ self primCpBoxNew: aBody boundingBox: aRectangle asCmBoundingBox
+	^ ( self primCpBoxNew: aBody boundingBox: aRectangle asCmBoundingBox radius: aRadius ) initialize
 ]
 
 { #category : #'Instance Creation' }
-CmShape class >> newBoxBody: aBody extent: aPoint [
+CmShape class >> newBoxBody: aBody extent: aPoint radius: aRadius [
 
 	"Creates a box shape with extent"
 
 	self flag: 'should this call #initialize?'.
-	self flag: 'falta el radius'.
-	^ self primCpBoxNew: aBody width: aPoint x asFloat height: aPoint y asFloat
+	^ ( self
+		primCpBoxNew: aBody
+		width: aPoint x asFloat
+		height: aPoint y asFloat
+		radius: aRadius ) initialize
 ]
 
 { #category : #'Instance Creation' }
@@ -65,6 +67,32 @@ CmShape class >> newPolygonBody: aBody vertices: hullVertices offset: offsetPoin
 ]
 
 { #category : #'Instance Creation' }
+CmShape class >> newPolygonBody: aBody vertices: hullVertices transform: aTransformation radius: aRadius [
+
+	"Creates a polygon shape from an array of vertices defining its clockwise convex hull and the offset from the center of gravity."
+
+	| vertices |
+
+	vertices := FFIExternalArray externalNewType: CmVector size: hullVertices size.
+	hullVertices
+		withIndexDo: [ :each :index | 
+			| v |
+
+			v := each asCmVector.
+			( vertices at: index )
+				x: v x;
+				y: v y	"vertices at: index put: v"
+			].
+
+	^ ( self
+		primCpPolygonNew: aBody
+		verticesNumber: vertices size
+		vertices: vertices getHandle
+		transform: aTransformation
+		radius: aRadius ) initialize
+]
+
+{ #category : #'Instance Creation' }
 CmShape class >> newSegmentBody: aBody from: fromPoint to: toPoint radius: aFloat [
 
 	"Creates a segment shape from a point to another"
@@ -77,21 +105,21 @@ CmShape class >> newSegmentBody: aBody from: fromPoint to: toPoint radius: aFloa
 ]
 
 { #category : #private }
-CmShape class >> primCpBoxNew: body boundingBox: box [
+CmShape class >> primCpBoxNew: body boundingBox: box radius: aRadius [
 
-	^ self ffiCall: #(cpShape * cpBoxShapeNew2 #(cpBody * body , cpBB box))
+	^ self ffiCall: #(cpShape * cpBoxShapeNew2 #(cpBody * body , cpBB box, cpFloat aRadius))
 ]
 
 { #category : #private }
-CmShape class >> primCpBoxNew: body width: width height: height [
+CmShape class >> primCpBoxNew: aBody width: aWidth height: aHeight radius: aRadius [
 
-	^ self ffiCall: #(cpShape * cpBoxShapeNew #(cpBody * body , cpFloat width , cpFloat height))
+	^ self ffiCall: #(cpShape * cpBoxShapeNew #(cpBody * aBody , cpFloat aWidth , cpFloat aHeight, cpFloat aRadius))
 ]
 
 { #category : #private }
-CmShape class >> primCpCircleShapeNew: body radius: radius offset: offset [
+CmShape class >> primCpCircleShapeNew: aBody radius: aRadius offset: anOffset [
 
-	^ self ffiCall: #(cpShape * cpCircleShapeNew #(cpBody * body , cpFloat radius , cpVect offset))
+	^ self ffiCall: #(cpShape * cpCircleShapeNew #(cpBody * aBody , cpFloat aRadius , cpVect anOffset))
 ]
 
 { #category : #private }
@@ -103,18 +131,26 @@ CmShape class >> primCpConvexHullCount: count source: verts result: result first
 ]
 
 { #category : #private }
-CmShape class >> primCpPolygonNew: body verticesNumber: numVertices vertices: vertices offset: offset [
+CmShape class >> primCpPolygonNew: body verticesNumber: numVertices vertices: vertices transform: aTransformation radius: aRadius [
 
 	^ self
 		ffiCall:
-			#(cpShape * cpPolyShapeNew #(cpBody * body , int numVertices , void * vertices , cpVect offset))
+			#(cpShape * cpPolyShapeNew #(cpBody * body , int numVertices , void * vertices , cpTransform aTransformation, cpFloat aRadius))
 ]
 
 { #category : #private }
-CmShape class >> primCpSegmentNew: body from: a to: b radius: radius [
+CmShape class >> primCpPolygonNewRaw: body verticesNumber: numVertices vertices: vertices radius: aRadius [
 
 	^ self
-		ffiCall: #(cpShape * cpSegmentShapeNew #(cpBody * body , cpVect a , cpVect b , cpFloat radius))
+		ffiCall:
+			#(cpShape * cpPolyShapeNewRaw #(cpBody * body , int numVertices , void * vertices, cpFloat aRadius))
+]
+
+{ #category : #private }
+CmShape class >> primCpSegmentNew: aBody from: aVertex to: anotherVertex radius: aRadius [
+
+	^ self
+		ffiCall: #(cpShape * cpSegmentShapeNew #(cpBody * aBody , cpVect aVertex , cpVect anotherVertex , cpFloat aRadius))
 ]
 
 { #category : #private }

@@ -45,6 +45,7 @@ ChipmunkLibrary class >> initializeTypeMap [
 		cpLayers                  uint
 		cpGroup                   uint
 		cpCollisionType           uint
+		cpBodyType 				  	  uint
 
 		cpDataPointer             ulong
 		cpShapeClass              ulong

@@ -1,13 +1,17 @@
 Class {
 	#name : #CmExternalObject,
 	#superclass : #FFIOpaqueObject,
-	#traits : 'TChipmunkLibrary',
-	#classTraits : 'TChipmunkLibrary classTrait',
 	#pools : [
 		'CmTypes'
 	],
 	#category : #'Chipmunk2D-Core'
 }
+
+{ #category : #finalization }
+CmExternalObject class >> ffiLibraryName [
+
+	^ ChipmunkLibrary 
+]
 
 { #category : #finalization }
 CmExternalObject class >> finalizeResourceData: handle [
@@ -19,6 +23,12 @@ CmExternalObject class >> finalizeResourceData: handle [
 CmExternalObject class >> new [
 
 	self error: 'Invalid invocation'
+]
+
+{ #category : #'library path' }
+CmExternalObject >> ffiLibraryName [
+
+	^ self class ffiLibraryName
 ]
 
 { #category : #private }
