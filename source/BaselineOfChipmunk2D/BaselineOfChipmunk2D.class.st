@@ -25,8 +25,8 @@ BaselineOfChipmunk2D >> projectClass [
 BaselineOfChipmunk2D >> setUpGroupsFor: spec [
 
 	^ spec
-		group: 'Tests' with: 'Chipmunk2D-UnitTests';
-		group: 'Deployment' with: 'Chipmunk2D-Model';
+		group: 'Tests' with: 'Chipmunk2D-Tests';
+		group: 'Deployment' with: 'Chipmunk2D';
 		group: 'Development' with: #('Deployment' 'Tests');
 		group: 'CI' with: 'Tests';
 		group: 'default' with: #('Development')
@@ -36,6 +36,6 @@ BaselineOfChipmunk2D >> setUpGroupsFor: spec [
 BaselineOfChipmunk2D >> setUpPackagesFor: spec [
 
 	spec
-		package: 'Chipmunk2D-Model';
-		package: 'Chipmunk2D-UnitTests' with: [ spec requires: #('Chipmunk2D-Model') ]
+		package: 'Chipmunk2D';
+		package: 'Chipmunk2D-Tests' with: [ spec requires: #('Chipmunk2D') ]
 ]
